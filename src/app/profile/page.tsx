@@ -182,7 +182,7 @@ export default function ProfilePage() {
       {/* Past appointments */}
       {past.length > 0 && (
         <>
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+          <h2 className="text-xl font-semibold text-gray-300 mb-4">
             Historial
           </h2>
           <div className="space-y-3">

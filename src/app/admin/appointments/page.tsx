@@ -105,8 +105,8 @@ export default function AdminAppointmentsPage() {
                       {statusLabels[apt.status]}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500">{apt.clientEmail}</p>
-                  <p className="text-sm text-gray-700 mt-1">
+                  <p className="text-sm text-gray-400">{apt.clientEmail}</p>
+                  <p className="text-sm text-gray-300 mt-1">
                     <strong>{apt.serviceName}</strong> - {apt.date} de{" "}
                     {apt.startTime} a {apt.endTime}
                   </p>
