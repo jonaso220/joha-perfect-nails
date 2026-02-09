@@ -22,16 +22,16 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-pink-600 mb-8">
+      <h1 className="text-3xl font-bold text-gold mb-8">
         Panel de Administración
       </h1>
 
       <div className="grid md:grid-cols-3 gap-6">
         <Link
           href="/admin/schedule"
-          className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition text-center group"
+          className="card-dark rounded-2xl p-6 hover:shadow-lg transition text-center group"
         >
-          <HiClock className="text-pink-500 text-4xl mx-auto mb-4 group-hover:scale-110 transition" />
+          <HiClock className="text-gold text-4xl mx-auto mb-4 group-hover:scale-110 transition" />
           <h3 className="font-semibold text-lg mb-2">Horarios</h3>
           <p className="text-gray-500 text-sm">
             Configurar horarios semanales y días de licencia.
@@ -40,9 +40,9 @@ export default function AdminPage() {
 
         <Link
           href="/admin/services"
-          className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition text-center group"
+          className="card-dark rounded-2xl p-6 hover:shadow-lg transition text-center group"
         >
-          <HiClipboardList className="text-pink-500 text-4xl mx-auto mb-4 group-hover:scale-110 transition" />
+          <HiClipboardList className="text-gold text-4xl mx-auto mb-4 group-hover:scale-110 transition" />
           <h3 className="font-semibold text-lg mb-2">Servicios</h3>
           <p className="text-gray-500 text-sm">
             Administrar servicios, precios y duración.
@@ -51,9 +51,9 @@ export default function AdminPage() {
 
         <Link
           href="/admin/appointments"
-          className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition text-center group"
+          className="card-dark rounded-2xl p-6 hover:shadow-lg transition text-center group"
         >
-          <HiCalendar className="text-pink-500 text-4xl mx-auto mb-4 group-hover:scale-110 transition" />
+          <HiCalendar className="text-gold text-4xl mx-auto mb-4 group-hover:scale-110 transition" />
           <h3 className="font-semibold text-lg mb-2">Turnos</h3>
           <p className="text-gray-500 text-sm">
             Ver y gestionar todos los turnos agendados.

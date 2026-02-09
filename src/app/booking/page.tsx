@@ -174,13 +174,13 @@ export default function BookingPage() {
   if (!user) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold text-pink-600 mb-4">Reservar turno</h2>
+        <h2 className="text-2xl font-bold text-gold mb-4">Reservar turno</h2>
         <p className="text-gray-500 mb-6">
           Necesitás iniciar sesión para poder reservar un turno.
         </p>
         <button
           onClick={signInWithGoogle}
-          className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-3 rounded-xl transition"
+          className="btn-gold font-semibold px-6 py-3 rounded-xl transition"
         >
           Iniciar sesión con Google
         </button>
@@ -197,10 +197,10 @@ export default function BookingPage() {
         <h2 className="text-2xl font-bold text-green-600 mb-2">
           Turno reservado
         </h2>
-        <p className="text-gray-600 mb-2">
+        <p className="text-gray-400 mb-2">
           <strong>{selectedService?.name}</strong>
         </p>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-400 mb-6">
           {selectedDate} a las {selectedTime}hs
         </p>
         <div className="flex gap-3 justify-center">
@@ -212,7 +212,7 @@ export default function BookingPage() {
               setSelectedDate("");
               setSelectedTime("");
             }}
-            className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-xl transition"
+            className="btn-gold px-6 py-2 rounded-xl transition"
           >
             Reservar otro turno
           </button>
@@ -229,7 +229,7 @@ export default function BookingPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-pink-600 mb-2">Reservar turno</h1>
+      <h1 className="text-3xl font-bold text-gold mb-2">Reservar turno</h1>
 
       {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
@@ -238,9 +238,9 @@ export default function BookingPage() {
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                 step > i + 1
-                  ? "bg-green-500 text-white"
+                  ? "bg-gold text-black"
                   : step === i + 1
-                  ? "bg-pink-600 text-white"
+                  ? "bg-gold text-black"
                   : "bg-gray-200 text-gray-500"
               }`}
             >
@@ -248,7 +248,7 @@ export default function BookingPage() {
             </div>
             <span
               className={`text-sm hidden sm:inline ${
-                step === i + 1 ? "text-pink-600 font-medium" : "text-gray-400"
+                step === i + 1 ? "text-gold font-medium" : "text-gray-400"
               }`}
             >
               {label}
@@ -261,7 +261,7 @@ export default function BookingPage() {
       {/* Step 1: Select Service */}
       {step === 1 && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Elegí un servicio</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Elegí un servicio</h2>
           {services.length > 0 ? (
             <div className="space-y-3">
               {services.map((service) => (
@@ -271,15 +271,15 @@ export default function BookingPage() {
                     setSelectedService(service);
                     setStep(2);
                   }}
-                  className={`w-full text-left bg-white rounded-xl p-5 shadow-md hover:shadow-lg transition border-2 ${
+                  className={`w-full text-left card-dark rounded-xl p-5 transition border-2 ${
                     selectedService?.id === service.id
-                      ? "border-pink-500"
+                      ? "border-gold"
                       : "border-transparent"
                   }`}
                 >
-                  <h3 className="font-semibold text-lg">{service.name}</h3>
+                  <h3 className="font-semibold text-lg text-white">{service.name}</h3>
                   <p className="text-gray-500 text-sm">{service.description}</p>
-                  <div className="flex gap-4 mt-2 text-sm text-gray-600">
+                  <div className="flex gap-4 mt-2 text-sm text-gray-400">
                     <span>{service.durationMinutes} min</span>
                     <span>${service.price.toLocaleString()}</span>
                   </div>
@@ -287,7 +287,7 @@ export default function BookingPage() {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-2xl p-8 shadow-md text-center">
+            <div className="card-dark rounded-2xl p-8 text-center">
               <p className="text-gray-400">
                 No hay servicios disponibles en este momento.
               </p>
@@ -301,11 +301,11 @@ export default function BookingPage() {
         <div>
           <button
             onClick={() => setStep(1)}
-            className="text-pink-600 hover:text-pink-700 flex items-center gap-1 mb-4 text-sm"
+            className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"
           >
             <HiArrowLeft /> Volver
           </button>
-          <h2 className="text-xl font-semibold mb-4">Elegí una fecha</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Elegí una fecha</h2>
           <p className="text-sm text-gray-500 mb-4">
             Servicio: <strong>{selectedService?.name}</strong>
           </p>
@@ -317,7 +317,7 @@ export default function BookingPage() {
                   <button
                     key={date}
                     onClick={() => handleDateSelect(date)}
-                    className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition text-center border-2 border-transparent hover:border-pink-500"
+                    className="card-dark rounded-xl p-4 transition text-center border-2 border-transparent hover:border-gold"
                   >
                     <div className="text-sm text-gray-500 capitalize">
                       {format(d, "EEEE", { locale: es })}
@@ -345,11 +345,11 @@ export default function BookingPage() {
               setStep(2);
               setSelectedTime("");
             }}
-            className="text-pink-600 hover:text-pink-700 flex items-center gap-1 mb-4 text-sm"
+            className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"
           >
             <HiArrowLeft /> Volver
           </button>
-          <h2 className="text-xl font-semibold mb-4">Elegí un horario</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Elegí un horario</h2>
           <p className="text-sm text-gray-500 mb-4">
             {selectedService?.name} -{" "}
             {format(new Date(selectedDate + "T12:00:00"), "EEEE d 'de' MMMM", {
@@ -365,10 +365,10 @@ export default function BookingPage() {
                     setSelectedTime(time);
                     setStep(4);
                   }}
-                  className={`bg-white rounded-xl p-3 shadow-md hover:shadow-lg transition text-center border-2 ${
+                  className={`card-dark rounded-xl p-3 transition text-center border-2 ${
                     selectedTime === time
-                      ? "border-pink-500"
-                      : "border-transparent hover:border-pink-500"
+                      ? "border-gold"
+                      : "border-transparent hover:border-gold"
                   }`}
                 >
                   <span className="font-medium">{time}</span>
@@ -388,13 +388,13 @@ export default function BookingPage() {
         <div>
           <button
             onClick={() => setStep(3)}
-            className="text-pink-600 hover:text-pink-700 flex items-center gap-1 mb-4 text-sm"
+            className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"
           >
             <HiArrowLeft /> Volver
           </button>
-          <h2 className="text-xl font-semibold mb-6">Confirmar turno</h2>
+          <h2 className="text-xl font-semibold text-white mb-6">Confirmar turno</h2>
 
-          <div className="bg-white rounded-2xl p-6 shadow-md mb-6">
+          <div className="card-dark rounded-2xl p-6 mb-6">
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-500">Servicio</span>
@@ -431,7 +431,7 @@ export default function BookingPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Precio</span>
-                <span className="font-semibold text-pink-600">
+                <span className="font-semibold text-gold">
                   ${selectedService.price.toLocaleString()}
                 </span>
               </div>
@@ -441,7 +441,7 @@ export default function BookingPage() {
           <button
             onClick={handleBooking}
             disabled={booking}
-            className="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50"
+            className="w-full btn-gold font-semibold py-3 rounded-xl transition disabled:opacity-50"
           >
             {booking ? "Reservando..." : "Confirmar reserva"}
           </button>

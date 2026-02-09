@@ -147,12 +147,12 @@ export default function SchedulePage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-pink-600 mb-8">
+      <h1 className="text-3xl font-bold text-gold mb-8">
         Configuración de Horarios
       </h1>
 
       {/* Weekly Schedule */}
-      <div className="bg-white rounded-2xl p-6 shadow-md mb-8">
+      <div className="card-dark rounded-2xl p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Horario semanal</h2>
         <p className="text-sm text-gray-500 mb-6">
           Configurá los horarios de atención para cada día. Podés agregar
@@ -168,14 +168,14 @@ export default function SchedulePage() {
                     type="checkbox"
                     checked={schedule[day]?.enabled || false}
                     onChange={() => toggleDay(day)}
-                    className="w-5 h-5 text-pink-600 rounded accent-pink-600"
+                    className="w-5 h-5 text-gold rounded accent-gold"
                   />
                   <span className="font-medium capitalize text-lg">{day}</span>
                 </label>
                 {schedule[day]?.enabled && (
                   <button
                     onClick={() => addSlot(day)}
-                    className="text-pink-600 hover:text-pink-700 text-sm flex items-center gap-1"
+                    className="text-gold hover:text-gold-dark text-sm flex items-center gap-1"
                   >
                     <HiPlus /> Agregar franja
                   </button>
@@ -219,7 +219,7 @@ export default function SchedulePage() {
           <button
             onClick={handleSaveSchedule}
             disabled={saving}
-            className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-2 rounded-xl flex items-center gap-2 disabled:opacity-50 transition"
+            className="btn-gold font-semibold px-6 py-2 rounded-xl flex items-center gap-2 disabled:opacity-50 transition"
           >
             <HiSave /> {saving ? "Guardando..." : "Guardar horarios"}
           </button>
@@ -236,7 +236,7 @@ export default function SchedulePage() {
       </div>
 
       {/* Blocked Dates */}
-      <div className="bg-white rounded-2xl p-6 shadow-md">
+      <div className="card-dark rounded-2xl p-6">
         <h2 className="text-xl font-semibold mb-4">Días de licencia</h2>
         <p className="text-sm text-gray-500 mb-6">
           Bloqueá días específicos para que las clientas no puedan agendar
@@ -259,7 +259,7 @@ export default function SchedulePage() {
           />
           <button
             onClick={handleAddBlockedDate}
-            className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-xl text-sm flex items-center gap-1 transition"
+            className="btn-gold px-4 py-2 rounded-xl text-sm flex items-center gap-1 transition"
           >
             <HiPlus /> Agregar
           </button>
