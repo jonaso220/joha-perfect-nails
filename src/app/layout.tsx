@@ -7,6 +7,15 @@ export const metadata: Metadata = {
   title: "Joha Perfect Nails - Reserva tu turno",
   description:
     "Reserva tu turno para uñas esculpidas, capping y soft gel con Joha Perfect Nails",
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
