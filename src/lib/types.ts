@@ -51,3 +51,10 @@ export interface UserProfile {
   role: "admin" | "client";
   createdAt: string;
 }
+
+export interface GalleryItem {
+  id?: string;
+  imageUrl: string;
+  description: string;
+  createdAt: string;
+}
