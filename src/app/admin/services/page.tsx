@@ -25,8 +25,8 @@ export default function ServicesPage() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    durationMinutes: 60,
-    price: 0,
+    durationMinutes: "60",
+    price: "",
     active: true,
   });
 
@@ -50,7 +50,7 @@ export default function ServicesPage() {
   }
 
   function resetForm() {
-    setForm({ name: "", description: "", durationMinutes: 60, price: 0, active: true });
+    setForm({ name: "", description: "", durationMinutes: "60", price: "", active: true });
     setEditingId(null);
     setShowAdd(false);
   }
@@ -58,11 +58,19 @@ export default function ServicesPage() {
   async function handleSave() {
     if (!form.name.trim()) return;
 
+    const serviceData = {
+      name: form.name,
+      description: form.description,
+      durationMinutes: parseInt(form.durationMinutes) || 60,
+      price: parseFloat(form.price) || 0,
+      active: form.active,
+    };
+
     try {
       if (editingId) {
-        await updateService(editingId, form);
+        await updateService(editingId, serviceData);
       } else {
-        await addService(form);
+        await addService(serviceData);
       }
       resetForm();
       await loadServices();
@@ -86,8 +94,8 @@ export default function ServicesPage() {
     setForm({
       name: service.name,
       description: service.description,
-      durationMinutes: service.durationMinutes,
-      price: service.price,
+      durationMinutes: String(service.durationMinutes),
+      price: String(service.price),
       active: service.active,
     });
     setShowAdd(true);
@@ -158,13 +166,13 @@ export default function ServicesPage() {
                 Duración (minutos)
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={form.durationMinutes}
                 onChange={(e) =>
-                  setForm({ ...form, durationMinutes: parseInt(e.target.value) || 0 })
+                  setForm({ ...form, durationMinutes: e.target.value.replace(/[^0-9]/g, "") })
                 }
-                min={15}
-                step={15}
+                placeholder="60"
                 className="border rounded-lg px-3 py-2 w-full"
               />
             </div>
@@ -173,12 +181,13 @@ export default function ServicesPage() {
                 Precio ($)
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={form.price}
                 onChange={(e) =>
-                  setForm({ ...form, price: parseFloat(e.target.value) || 0 })
+                  setForm({ ...form, price: e.target.value.replace(/[^0-9.]/g, "") })
                 }
-                min={0}
+                placeholder="0"
                 className="border rounded-lg px-3 py-2 w-full"
               />
             </div>
