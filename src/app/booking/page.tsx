@@ -13,9 +13,8 @@ import {
   createAppointment,
   getAdminWhatsApp,
   validatePromoCode,
-  updatePromoCode,
+  incrementPromoUsage,
   addWaitlistEntry,
-  getWaitlistByClient,
 } from "@/lib/firestore";
 import { NailService, WeeklySchedule, BlockedDate, Appointment, TimeSlot } from "@/lib/types";
 import { format, addDays, parse, addMinutes, isBefore } from "date-fns";
@@ -235,12 +234,7 @@ export default function BookingPage() {
       await createAppointment(appointmentData as Omit<Appointment, "id">);
 
       if (promoApplied) {
-        const { getPromoCodes } = await import("@/lib/firestore");
-        const promos = await getPromoCodes();
-        const promo = promos.find((p) => p.id === promoApplied.id);
-        if (promo) {
-          await updatePromoCode(promo.id!, { usageCount: promo.usageCount + 1 });
-        }
+        await incrementPromoUsage(promoApplied.id);
       }
 
       setBooked(true);

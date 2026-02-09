@@ -9,9 +9,9 @@ import {
   updateAppointment,
   getCancellationHours,
   addReview,
-  getReviewByAppointment,
+  getReviewsByClient,
 } from "@/lib/firestore";
-import { Appointment, Review } from "@/lib/types";
+import { Appointment } from "@/lib/types";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { HiStar } from "react-icons/hi";
@@ -46,15 +46,12 @@ export default function ProfilePage() {
   async function loadAppointments() {
     if (!user) return;
     try {
-      const data = await getAppointmentsByClient(user.uid);
+      const [data, reviews] = await Promise.all([
+        getAppointmentsByClient(user.uid),
+        getReviewsByClient(user.uid),
+      ]);
       setAppointments(data);
-      const reviewed = new Set<string>();
-      for (const apt of data) {
-        if (apt.status === "completed" && apt.id) {
-          const review = await getReviewByAppointment(apt.id);
-          if (review) reviewed.add(apt.id);
-        }
-      }
+      const reviewed = new Set<string>(reviews.map((r) => r.appointmentId));
       setReviewedIds(reviewed);
     } catch (error) {
       console.error("Error loading appointments:", error);
@@ -155,7 +152,7 @@ export default function ProfilePage() {
           {editingPhone ? (
             <>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                className="border rounded-lg px-3 py-1 text-sm flex-1" placeholder="Ej: +54 9 11 1234-5678" />
+                className="border border-gray-700 bg-black/30 rounded-lg px-3 py-1 text-sm flex-1 text-white placeholder-gray-600" placeholder="Ej: +54 9 11 1234-5678" />
               <button onClick={handleSavePhone} className="btn-gold px-3 py-1 rounded-lg text-sm">Guardar</button>
               <button onClick={() => setEditingPhone(false)} className="text-gray-500 text-sm">Cancelar</button>
             </>
