@@ -9,8 +9,13 @@ import {
   getWeeklySchedule,
   getBlockedDates,
   getAppointmentsByDate,
+  getAppointmentsByClient,
   createAppointment,
   getAdminWhatsApp,
+  validatePromoCode,
+  updatePromoCode,
+  addWaitlistEntry,
+  getWaitlistByClient,
 } from "@/lib/firestore";
 import { NailService, WeeklySchedule, BlockedDate, Appointment, TimeSlot } from "@/lib/types";
 import { format, addDays, parse, addMinutes, isBefore } from "date-fns";
@@ -32,7 +37,7 @@ export default function BookingPage() {
   const { user, profile, loading: authLoading, signInWithGoogle } = useAuth();
   const router = useRouter();
 
-  const [step, setStep] = useState(1); // 1: service, 2: date, 3: time, 4: confirm
+  const [step, setStep] = useState(1);
   const [services, setServices] = useState<NailService[]>([]);
   const [schedule, setSchedule] = useState<WeeklySchedule | null>(null);
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
@@ -41,14 +46,31 @@ export default function BookingPage() {
   const [booking, setBooking] = useState(false);
   const [booked, setBooked] = useState(false);
   const [adminWhatsApp, setAdminWhatsApp] = useState("");
+  const [hasActiveBooking, setHasActiveBooking] = useState(false);
 
   const [selectedService, setSelectedService] = useState<NailService | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [notes, setNotes] = useState("");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoApplied, setPromoApplied] = useState<{ percent: number; id: string } | null>(null);
+  const [promoError, setPromoError] = useState("");
+  const [joiningWaitlist, setJoiningWaitlist] = useState(false);
+  const [waitlistJoined, setWaitlistJoined] = useState(false);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      const today = new Date().toISOString().split("T")[0];
+      getAppointmentsByClient(user.uid).then((apts) => {
+        const active = apts.some((a) => a.status === "confirmed" && a.date >= today);
+        setHasActiveBooking(active);
+      });
+    }
+  }, [user]);
 
   async function loadData() {
     try {
@@ -79,7 +101,6 @@ export default function BookingPage() {
     }
   }
 
-  // Generate next 30 available dates
   const availableDates = useMemo(() => {
     if (!schedule) return [];
     const dates: string[] = [];
@@ -98,7 +119,6 @@ export default function BookingPage() {
     return dates;
   }, [schedule, blockedDates]);
 
-  // Generate available time slots for selected date
   const availableSlots = useMemo(() => {
     if (!schedule || !selectedDate || !selectedService) return [];
 
@@ -118,7 +138,6 @@ export default function BookingPage() {
         const timeStr = format(current, "HH:mm");
         const endStr = format(addMinutes(current, duration), "HH:mm");
 
-        // Check for overlaps with existing appointments
         const hasConflict = existingAppointments.some((apt) => {
           return timeStr < apt.endTime && endStr > apt.startTime;
         });
@@ -127,7 +146,7 @@ export default function BookingPage() {
           slots.push(timeStr);
         }
 
-        current = addMinutes(current, 30); // 30-min increments
+        current = addMinutes(current, 30);
       }
     });
 
@@ -137,8 +156,50 @@ export default function BookingPage() {
   async function handleDateSelect(date: string) {
     setSelectedDate(date);
     setSelectedTime("");
+    setWaitlistJoined(false);
     await loadAppointmentsForDate(date);
     setStep(3);
+  }
+
+  async function handleApplyPromo() {
+    setPromoError("");
+    setPromoApplied(null);
+    if (!promoCode.trim()) return;
+    const promo = await validatePromoCode(promoCode.trim());
+    if (promo) {
+      setPromoApplied({ percent: promo.discountPercent, id: promo.id! });
+    } else {
+      setPromoError("Código inválido o expirado");
+    }
+  }
+
+  async function handleJoinWaitlist() {
+    if (!user || !profile || !selectedService || !selectedDate) return;
+    setJoiningWaitlist(true);
+    try {
+      await addWaitlistEntry({
+        clientId: user.uid,
+        clientName: profile.displayName,
+        clientEmail: profile.email,
+        clientPhone: profile.phone || "",
+        serviceId: selectedService.id!,
+        serviceName: selectedService.name,
+        date: selectedDate,
+        createdAt: new Date().toISOString(),
+        notified: false,
+      });
+      setWaitlistJoined(true);
+    } catch (error) {
+      console.error("Error joining waitlist:", error);
+    } finally {
+      setJoiningWaitlist(false);
+    }
+  }
+
+  function getFinalPrice(): number {
+    if (!selectedService) return 0;
+    if (promoApplied) return Math.round(selectedService.price * (1 - promoApplied.percent / 100));
+    return selectedService.price;
   }
 
   async function handleBooking() {
@@ -151,7 +212,7 @@ export default function BookingPage() {
         "HH:mm"
       );
 
-      await createAppointment({
+      const appointmentData: Record<string, unknown> = {
         clientId: user.uid,
         clientName: profile.displayName,
         clientEmail: profile.email,
@@ -162,10 +223,28 @@ export default function BookingPage() {
         startTime: selectedTime,
         endTime: endTime,
         status: "confirmed",
+        price: getFinalPrice(),
         createdAt: new Date().toISOString(),
-      });
+      };
+      if (notes.trim()) appointmentData.notes = notes.trim();
+      if (promoApplied) {
+        appointmentData.discountCode = promoCode.trim();
+        appointmentData.discountAmount = promoApplied.percent;
+      }
+
+      await createAppointment(appointmentData as Omit<Appointment, "id">);
+
+      if (promoApplied) {
+        const { getPromoCodes } = await import("@/lib/firestore");
+        const promos = await getPromoCodes();
+        const promo = promos.find((p) => p.id === promoApplied.id);
+        if (promo) {
+          await updatePromoCode(promo.id!, { usageCount: promo.usageCount + 1 });
+        }
+      }
 
       setBooked(true);
+      setHasActiveBooking(true);
     } catch (error) {
       console.error("Error creating appointment:", error);
       alert("Error al crear el turno. Por favor intentá de nuevo.");
@@ -180,14 +259,24 @@ export default function BookingPage() {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
         <h2 className="text-2xl font-bold text-gold mb-4">Reservar turno</h2>
-        <p className="text-gray-500 mb-6">
-          Necesitás iniciar sesión para poder reservar un turno.
-        </p>
-        <button
-          onClick={signInWithGoogle}
-          className="btn-gold font-semibold px-6 py-3 rounded-xl transition"
-        >
+        <p className="text-gray-500 mb-6">Necesitás iniciar sesión para poder reservar un turno.</p>
+        <button onClick={signInWithGoogle} className="btn-gold font-semibold px-6 py-3 rounded-xl transition">
           Iniciar sesión con Google
+        </button>
+      </div>
+    );
+  }
+
+  if (hasActiveBooking && !booked) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <div className="bg-gold/10 border border-gold/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+          <HiCheck className="text-gold text-3xl" />
+        </div>
+        <h2 className="text-2xl font-bold text-gold mb-2">Ya tenés un turno activo</h2>
+        <p className="text-gray-400 mb-6">Podés cancelarlo desde tu perfil antes de reservar uno nuevo.</p>
+        <button onClick={() => router.push("/profile")} className="btn-gold px-6 py-2 rounded-xl transition">
+          Ver mis turnos
         </button>
       </div>
     );
@@ -207,45 +296,19 @@ export default function BookingPage() {
         <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
           <HiCheck className="text-green-600 text-3xl" />
         </div>
-        <h2 className="text-2xl font-bold text-green-600 mb-2">
-          Turno reservado
-        </h2>
-        <p className="text-gray-400 mb-2">
-          <strong>{selectedService?.name}</strong>
-        </p>
-        <p className="text-gray-400 mb-6">
-          {dateFormatted} a las {selectedTime}hs
-        </p>
+        <h2 className="text-2xl font-bold text-green-600 mb-2">Turno reservado</h2>
+        <p className="text-gray-400 mb-2"><strong>{selectedService?.name}</strong></p>
+        <p className="text-gray-400 mb-6">{dateFormatted} a las {selectedTime}hs</p>
 
         {whatsappUrl && (
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition mb-4"
-          >
-            <FaWhatsapp size={20} />
-            Confirmar por WhatsApp
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition mb-4">
+            <FaWhatsapp size={20} /> Confirmar por WhatsApp
           </a>
         )}
 
         <div className="flex gap-3 justify-center mt-2">
-          <button
-            onClick={() => {
-              setBooked(false);
-              setStep(1);
-              setSelectedService(null);
-              setSelectedDate("");
-              setSelectedTime("");
-            }}
-            className="btn-gold px-6 py-2 rounded-xl transition"
-          >
-            Reservar otro turno
-          </button>
-          <button
-            onClick={() => router.push("/profile")}
-            className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-6 py-2 rounded-xl transition"
-          >
+          <button onClick={() => router.push("/profile")} className="btn-gold px-6 py-2 rounded-xl transition">
             Ver mis turnos
           </button>
         </div>
@@ -257,52 +320,28 @@ export default function BookingPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gold mb-2">Reservar turno</h1>
 
-      {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
         {["Servicio", "Fecha", "Horario", "Confirmar"].map((label, i) => (
           <div key={label} className="flex items-center gap-2">
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                step > i + 1
-                  ? "bg-gold text-black"
-                  : step === i + 1
-                  ? "bg-gold text-black"
-                  : "bg-gray-200 text-gray-500"
-              }`}
-            >
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+              step > i + 1 ? "bg-gold text-black" : step === i + 1 ? "bg-gold text-black" : "bg-gray-200 text-gray-500"
+            }`}>
               {step > i + 1 ? <HiCheck /> : i + 1}
             </div>
-            <span
-              className={`text-sm hidden sm:inline ${
-                step === i + 1 ? "text-gold font-medium" : "text-gray-400"
-              }`}
-            >
-              {label}
-            </span>
+            <span className={`text-sm hidden sm:inline ${step === i + 1 ? "text-gold font-medium" : "text-gray-400"}`}>{label}</span>
             {i < 3 && <div className="w-8 h-0.5 bg-gray-200"></div>}
           </div>
         ))}
       </div>
 
-      {/* Step 1: Select Service */}
       {step === 1 && (
         <div>
           <h2 className="text-xl font-semibold text-white mb-4">Elegí un servicio</h2>
           {services.length > 0 ? (
             <div className="space-y-3">
               {services.map((service) => (
-                <button
-                  key={service.id}
-                  onClick={() => {
-                    setSelectedService(service);
-                    setStep(2);
-                  }}
-                  className={`w-full text-left card-dark rounded-xl p-5 transition border-2 ${
-                    selectedService?.id === service.id
-                      ? "border-gold"
-                      : "border-transparent"
-                  }`}
-                >
+                <button key={service.id} onClick={() => { setSelectedService(service); setStep(2); }}
+                  className={`w-full text-left card-dark rounded-xl p-5 transition border-2 ${selectedService?.id === service.id ? "border-gold" : "border-transparent"}`}>
                   <h3 className="font-semibold text-lg text-white">{service.name}</h3>
                   <p className="text-gray-500 text-sm">{service.description}</p>
                   <div className="flex gap-4 mt-2 text-sm text-gray-400">
@@ -314,161 +353,118 @@ export default function BookingPage() {
             </div>
           ) : (
             <div className="card-dark rounded-2xl p-8 text-center">
-              <p className="text-gray-400">
-                No hay servicios disponibles en este momento.
-              </p>
+              <p className="text-gray-400">No hay servicios disponibles en este momento.</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Step 2: Select Date */}
       {step === 2 && (
         <div>
-          <button
-            onClick={() => setStep(1)}
-            className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"
-          >
-            <HiArrowLeft /> Volver
-          </button>
+          <button onClick={() => setStep(1)} className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"><HiArrowLeft /> Volver</button>
           <h2 className="text-xl font-semibold text-white mb-4">Elegí una fecha</h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Servicio: <strong>{selectedService?.name}</strong>
-          </p>
+          <p className="text-sm text-gray-500 mb-4">Servicio: <strong>{selectedService?.name}</strong></p>
           {availableDates.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {availableDates.map((date) => {
                 const d = new Date(date + "T12:00:00");
                 return (
-                  <button
-                    key={date}
-                    onClick={() => handleDateSelect(date)}
-                    className="card-dark rounded-xl p-4 transition text-center border-2 border-transparent hover:border-gold"
-                  >
-                    <div className="text-sm text-gray-500 capitalize">
-                      {format(d, "EEEE", { locale: es })}
-                    </div>
-                    <div className="text-lg font-semibold">
-                      {format(d, "d MMM", { locale: es })}
-                    </div>
+                  <button key={date} onClick={() => handleDateSelect(date)} className="card-dark rounded-xl p-4 transition text-center border-2 border-transparent hover:border-gold">
+                    <div className="text-sm text-gray-500 capitalize">{format(d, "EEEE", { locale: es })}</div>
+                    <div className="text-lg font-semibold">{format(d, "d MMM", { locale: es })}</div>
                   </button>
                 );
               })}
             </div>
           ) : (
-            <p className="text-gray-400 text-center py-8">
-              No hay fechas disponibles en los próximos días.
-            </p>
+            <p className="text-gray-400 text-center py-8">No hay fechas disponibles en los próximos días.</p>
           )}
         </div>
       )}
 
-      {/* Step 3: Select Time */}
       {step === 3 && (
         <div>
-          <button
-            onClick={() => {
-              setStep(2);
-              setSelectedTime("");
-            }}
-            className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"
-          >
-            <HiArrowLeft /> Volver
-          </button>
+          <button onClick={() => { setStep(2); setSelectedTime(""); }} className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"><HiArrowLeft /> Volver</button>
           <h2 className="text-xl font-semibold text-white mb-4">Elegí un horario</h2>
           <p className="text-sm text-gray-500 mb-4">
-            {selectedService?.name} -{" "}
-            {format(new Date(selectedDate + "T12:00:00"), "EEEE d 'de' MMMM", {
-              locale: es,
-            })}
+            {selectedService?.name} - {format(new Date(selectedDate + "T12:00:00"), "EEEE d 'de' MMMM", { locale: es })}
           </p>
           {availableSlots.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
               {availableSlots.map((time) => (
-                <button
-                  key={time}
-                  onClick={() => {
-                    setSelectedTime(time);
-                    setStep(4);
-                  }}
-                  className={`card-dark rounded-xl p-3 transition text-center border-2 ${
-                    selectedTime === time
-                      ? "border-gold"
-                      : "border-transparent hover:border-gold"
-                  }`}
-                >
+                <button key={time} onClick={() => { setSelectedTime(time); setStep(4); }}
+                  className={`card-dark rounded-xl p-3 transition text-center border-2 ${selectedTime === time ? "border-gold" : "border-transparent hover:border-gold"}`}>
                   <span className="font-medium">{time}</span>
                 </button>
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-center py-8">
-              No hay horarios disponibles para esta fecha.
-            </p>
+            <div className="card-dark rounded-2xl p-6 text-center">
+              <p className="text-gray-400 mb-4">No hay horarios disponibles para esta fecha.</p>
+              {user && !waitlistJoined ? (
+                <button
+                  onClick={handleJoinWaitlist}
+                  disabled={joiningWaitlist}
+                  className="btn-gold px-6 py-2 rounded-xl transition disabled:opacity-50"
+                >
+                  {joiningWaitlist ? "Anotándote..." : "Anotarme en lista de espera"}
+                </button>
+              ) : waitlistJoined ? (
+                <p className="text-green-400 text-sm">Te anotaste en la lista de espera. Te avisaremos si se libera un horario.</p>
+              ) : null}
+            </div>
           )}
         </div>
       )}
 
-      {/* Step 4: Confirm */}
       {step === 4 && selectedService && (
         <div>
-          <button
-            onClick={() => setStep(3)}
-            className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"
-          >
-            <HiArrowLeft /> Volver
-          </button>
+          <button onClick={() => setStep(3)} className="text-gold hover:text-gold-dark flex items-center gap-1 mb-4 text-sm"><HiArrowLeft /> Volver</button>
           <h2 className="text-xl font-semibold text-white mb-6">Confirmar turno</h2>
 
           <div className="card-dark rounded-2xl p-6 mb-6">
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Servicio</span>
-                <span className="font-medium">{selectedService.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Fecha</span>
-                <span className="font-medium capitalize">
-                  {format(
-                    new Date(selectedDate + "T12:00:00"),
-                    "EEEE d 'de' MMMM yyyy",
-                    { locale: es }
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Horario</span>
-                <span className="font-medium">
-                  {selectedTime} -{" "}
-                  {format(
-                    addMinutes(
-                      parse(selectedTime, "HH:mm", new Date()),
-                      selectedService.durationMinutes
-                    ),
-                    "HH:mm"
-                  )}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Duración</span>
-                <span className="font-medium">
-                  {selectedService.durationMinutes} minutos
-                </span>
-              </div>
+              <div className="flex justify-between"><span className="text-gray-500">Servicio</span><span className="font-medium">{selectedService.name}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Fecha</span><span className="font-medium capitalize">{format(new Date(selectedDate + "T12:00:00"), "EEEE d 'de' MMMM yyyy", { locale: es })}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Horario</span><span className="font-medium">{selectedTime} - {format(addMinutes(parse(selectedTime, "HH:mm", new Date()), selectedService.durationMinutes), "HH:mm")}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">Duración</span><span className="font-medium">{selectedService.durationMinutes} minutos</span></div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Precio</span>
-                <span className="font-semibold text-gold">
-                  ${selectedService.price.toLocaleString()}
-                </span>
+                <div className="text-right">
+                  {promoApplied ? (
+                    <>
+                      <span className="text-gray-500 line-through text-sm mr-2">${selectedService.price.toLocaleString()}</span>
+                      <span className="font-semibold text-green-500">${getFinalPrice().toLocaleString()}</span>
+                      <span className="text-green-500 text-xs ml-1">(-{promoApplied.percent}%)</span>
+                    </>
+                  ) : (
+                    <span className="font-semibold text-gold">${selectedService.price.toLocaleString()}</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          <button
-            onClick={handleBooking}
-            disabled={booking}
-            className="w-full btn-gold font-semibold py-3 rounded-xl transition disabled:opacity-50"
-          >
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-400 mb-1">Notas (opcional)</label>
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)}
+              placeholder="Ej: quiero diseño francés, es mi primera vez, etc."
+              rows={2} className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 w-full text-white placeholder-gray-600 text-sm" />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-400 mb-1">Código de descuento (opcional)</label>
+            <div className="flex gap-2">
+              <input type="text" value={promoCode}
+                onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(""); setPromoApplied(null); }}
+                placeholder="Ej: PRIMERA10" className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 flex-1 text-white placeholder-gray-600 text-sm" />
+              <button onClick={handleApplyPromo} className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-4 py-2 rounded-lg text-sm transition">Aplicar</button>
+            </div>
+            {promoError && <p className="text-red-400 text-xs mt-1">{promoError}</p>}
+            {promoApplied && <p className="text-green-400 text-xs mt-1">Descuento del {promoApplied.percent}% aplicado</p>}
+          </div>
+
+          <button onClick={handleBooking} disabled={booking} className="w-full btn-gold font-semibold py-3 rounded-xl transition disabled:opacity-50">
             {booking ? "Reservando..." : "Confirmar reserva"}
           </button>
         </div>

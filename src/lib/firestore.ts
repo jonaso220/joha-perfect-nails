@@ -17,6 +17,9 @@ import {
   NailService,
   Appointment,
   GalleryItem,
+  Review,
+  PromoCode,
+  WaitlistEntry,
 } from "./types";
 
 // --- Schedule ---
@@ -129,6 +132,50 @@ export async function deleteGalleryItem(id: string) {
   return deleteDoc(doc(db, "gallery", id));
 }
 
+// --- Reviews ---
+export async function getReviews(): Promise<Review[]> {
+  const snap = await getDocs(collection(db, "reviews"));
+  const reviews = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Review));
+  return reviews.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function getReviewByAppointment(appointmentId: string): Promise<Review | null> {
+  const q = query(collection(db, "reviews"), where("appointmentId", "==", appointmentId));
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return { id: snap.docs[0].id, ...snap.docs[0].data() } as Review;
+}
+
+export async function addReview(review: Omit<Review, "id">) {
+  return addDoc(collection(db, "reviews"), review);
+}
+
+// --- Promo Codes ---
+export async function getPromoCodes(): Promise<PromoCode[]> {
+  const snap = await getDocs(collection(db, "promoCodes"));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as PromoCode));
+}
+
+export async function addPromoCode(promo: Omit<PromoCode, "id">) {
+  return addDoc(collection(db, "promoCodes"), promo);
+}
+
+export async function updatePromoCode(id: string, data: Partial<PromoCode>) {
+  return updateDoc(doc(db, "promoCodes", id), data);
+}
+
+export async function deletePromoCode(id: string) {
+  return deleteDoc(doc(db, "promoCodes", id));
+}
+
+export async function validatePromoCode(code: string): Promise<PromoCode | null> {
+  const promos = await getPromoCodes();
+  const promo = promos.find(
+    (p) => p.code.toLowerCase() === code.toLowerCase() && p.active && p.usageCount < p.usageLimit
+  );
+  return promo || null;
+}
+
 // --- Settings ---
 export async function getAdminWhatsApp(): Promise<string> {
   const docRef = doc(db, "settings", "contact");
@@ -140,4 +187,37 @@ export async function getAdminWhatsApp(): Promise<string> {
 export async function saveAdminWhatsApp(whatsapp: string) {
   const docRef = doc(db, "settings", "contact");
   await setDoc(docRef, { whatsapp });
+}
+
+export async function getCancellationHours(): Promise<number> {
+  const docRef = doc(db, "settings", "policies");
+  const snap = await getDoc(docRef);
+  if (snap.exists()) return (snap.data() as { cancellationHours: number }).cancellationHours || 0;
+  return 0;
+}
+
+export async function saveCancellationHours(hours: number) {
+  const docRef = doc(db, "settings", "policies");
+  await setDoc(docRef, { cancellationHours: hours });
+}
+
+// --- Waitlist ---
+export async function addWaitlistEntry(entry: Omit<WaitlistEntry, "id">) {
+  return addDoc(collection(db, "waitlist"), entry);
+}
+
+export async function getWaitlistByDate(date: string): Promise<WaitlistEntry[]> {
+  const q = query(collection(db, "waitlist"), where("date", "==", date));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as WaitlistEntry));
+}
+
+export async function getWaitlistByClient(clientId: string): Promise<WaitlistEntry[]> {
+  const q = query(collection(db, "waitlist"), where("clientId", "==", clientId));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as WaitlistEntry));
+}
+
+export async function removeWaitlistEntry(id: string) {
+  return deleteDoc(doc(db, "waitlist", id));
 }
