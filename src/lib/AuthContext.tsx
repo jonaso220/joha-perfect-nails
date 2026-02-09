@@ -38,7 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const profileRef = doc(db, "users", user.uid);
         const profileSnap = await getDoc(profileRef);
         if (profileSnap.exists()) {
-          setProfile(profileSnap.data() as UserProfile);
+          const existingProfile = profileSnap.data() as UserProfile;
+          const expectedRole = adminUids.includes(user.uid) ? "admin" : "client";
+          if (existingProfile.role !== expectedRole) {
+            existingProfile.role = expectedRole;
+            await setDoc(profileRef, existingProfile);
+          }
+          setProfile(existingProfile);
         } else {
           const newProfile: UserProfile = {
             uid: user.uid,
