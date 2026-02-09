@@ -65,7 +65,7 @@ export default function AdminAppointmentsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-pink-600 mb-8">
+      <h1 className="text-3xl font-bold text-gold mb-8">
         Gestión de Turnos
       </h1>
 
@@ -77,8 +77,8 @@ export default function AdminAppointmentsPage() {
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-xl text-sm transition ${
               filter === f
-                ? "bg-pink-600 text-white"
-                : "bg-white text-gray-600 hover:bg-pink-50"
+                ? "bg-gold text-black"
+                : "card-dark text-gray-400 hover:bg-gold/10"
             }`}
           >
             {f === "all" ? "Todos" : statusLabels[f]} ({f === "all" ? appointments.length : appointments.filter((a) => a.status === f).length})
@@ -91,7 +91,7 @@ export default function AdminAppointmentsPage() {
           {filtered.map((apt) => (
             <div
               key={apt.id}
-              className="bg-white rounded-2xl p-6 shadow-md"
+              className="card-dark rounded-2xl p-6"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
@@ -133,7 +133,7 @@ export default function AdminAppointmentsPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-8 shadow-md text-center">
+        <div className="card-dark rounded-2xl p-8 text-center">
           <p className="text-gray-400">No hay turnos para mostrar.</p>
         </div>
       )}

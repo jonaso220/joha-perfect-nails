@@ -108,14 +108,14 @@ export default function ServicesPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-pink-600">Servicios</h1>
+        <h1 className="text-3xl font-bold text-gold">Servicios</h1>
         {!showAdd && (
           <button
             onClick={() => {
               resetForm();
               setShowAdd(true);
             }}
-            className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition"
+            className="btn-gold px-4 py-2 rounded-xl flex items-center gap-2 transition"
           >
             <HiPlus /> Nuevo servicio
           </button>
@@ -124,7 +124,7 @@ export default function ServicesPage() {
 
       {/* Add/Edit form */}
       {showAdd && (
-        <div className="bg-white rounded-2xl p-6 shadow-md mb-8">
+        <div className="card-dark rounded-2xl p-6 mb-8">
           <h2 className="text-lg font-semibold mb-4">
             {editingId ? "Editar servicio" : "Nuevo servicio"}
           </h2>
@@ -186,7 +186,7 @@ export default function ServicesPage() {
           <div className="flex gap-3 mt-4">
             <button
               onClick={handleSave}
-              className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 transition"
+              className="btn-gold px-4 py-2 rounded-xl flex items-center gap-2 transition"
             >
               <HiCheck /> {editingId ? "Actualizar" : "Guardar"}
             </button>
@@ -206,7 +206,7 @@ export default function ServicesPage() {
           {services.map((service) => (
             <div
               key={service.id}
-              className={`bg-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+              className={`card-dark rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 ${
                 !service.active ? "opacity-60" : ""
               }`}
             >
@@ -220,7 +220,7 @@ export default function ServicesPage() {
                   )}
                 </div>
                 <p className="text-gray-500 text-sm">{service.description}</p>
-                <div className="flex gap-4 mt-1 text-sm text-gray-600">
+                <div className="flex gap-4 mt-1 text-sm text-gray-400">
                   <span>{service.durationMinutes} min</span>
                   <span>${service.price.toLocaleString()}</span>
                 </div>
@@ -238,7 +238,7 @@ export default function ServicesPage() {
                 </button>
                 <button
                   onClick={() => startEdit(service)}
-                  className="text-pink-600 hover:text-pink-700 p-2"
+                  className="text-gold hover:text-gold-light p-2"
                 >
                   <HiPencil size={18} />
                 </button>
@@ -253,7 +253,7 @@ export default function ServicesPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-8 shadow-md text-center">
+        <div className="card-dark rounded-2xl p-8 text-center">
           <p className="text-gray-400">
             No hay servicios configurados. Agregá uno para comenzar.
           </p>

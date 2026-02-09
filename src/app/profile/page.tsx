@@ -86,7 +86,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Profile section */}
-      <div className="bg-white rounded-2xl p-6 shadow-md mb-8">
+      <div className="card-dark rounded-2xl p-6 mb-8">
         <div className="flex items-center gap-4 mb-4">
           {profile?.photoURL && (
             <img
@@ -102,7 +102,7 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <label className="text-sm text-gray-600">Teléfono:</label>
+          <label className="text-sm text-gray-400">Teléfono:</label>
           {editingPhone ? (
             <>
               <input
@@ -114,7 +114,7 @@ export default function ProfilePage() {
               />
               <button
                 onClick={handleSavePhone}
-                className="bg-pink-600 hover:bg-pink-700 text-white px-3 py-1 rounded-lg text-sm transition"
+                className="btn-gold px-3 py-1 rounded-lg text-sm"
               >
                 Guardar
               </button>
@@ -130,7 +130,7 @@ export default function ProfilePage() {
               <span className="text-sm">{phone || "No configurado"}</span>
               <button
                 onClick={() => setEditingPhone(true)}
-                className="text-pink-600 text-sm underline"
+                className="text-gold text-sm underline"
               >
                 Editar
               </button>
@@ -140,17 +140,17 @@ export default function ProfilePage() {
       </div>
 
       {/* Upcoming appointments */}
-      <h2 className="text-2xl font-bold text-pink-600 mb-4">
+      <h2 className="text-2xl font-bold text-gold mb-4">
         Próximos turnos
       </h2>
       {upcoming.length > 0 ? (
         <div className="space-y-3 mb-8">
           {upcoming.map((apt) => (
-            <div key={apt.id} className="bg-white rounded-xl p-5 shadow-md">
+            <div key={apt.id} className="card-dark rounded-xl p-5">
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-semibold">{apt.serviceName}</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-400">
                     {apt.date} - {apt.startTime} a {apt.endTime}
                   </p>
                 </div>
@@ -174,7 +174,7 @@ export default function ProfilePage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-6 shadow-md text-center mb-8">
+        <div className="card-dark rounded-2xl p-6 text-center mb-8">
           <p className="text-gray-400">No tenés turnos próximos.</p>
         </div>
       )}
@@ -189,7 +189,7 @@ export default function ProfilePage() {
             {past.map((apt) => (
               <div
                 key={apt.id}
-                className="bg-white rounded-xl p-4 shadow-sm opacity-70"
+                className="card-dark rounded-xl p-4 opacity-70"
               >
                 <div className="flex justify-between items-center">
                   <div>
