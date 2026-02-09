@@ -123,7 +123,7 @@ export default function SchedulePage() {
     try {
       await addBlockedDate({
         date: newBlockedDate,
-        reason: newBlockedReason || undefined,
+        ...(newBlockedReason ? { reason: newBlockedReason } : {}),
       });
       setNewBlockedDate("");
       setNewBlockedReason("");

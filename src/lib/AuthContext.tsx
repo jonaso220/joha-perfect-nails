@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             uid: user.uid,
             email: user.email || "",
             displayName: user.displayName || "",
-            photoURL: user.photoURL || undefined,
+            ...(user.photoURL ? { photoURL: user.photoURL } : {}),
             role: adminUids.includes(user.uid) ? "admin" : "client",
             createdAt: new Date().toISOString(),
           };

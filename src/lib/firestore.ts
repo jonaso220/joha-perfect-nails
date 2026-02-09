@@ -9,6 +9,7 @@ import {
   deleteDoc,
   query,
   where,
+  increment,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import {
@@ -146,6 +147,12 @@ export async function getReviewByAppointment(appointmentId: string): Promise<Rev
   return { id: snap.docs[0].id, ...snap.docs[0].data() } as Review;
 }
 
+export async function getReviewsByClient(clientId: string): Promise<Review[]> {
+  const q = query(collection(db, "reviews"), where("clientId", "==", clientId));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Review));
+}
+
 export async function addReview(review: Omit<Review, "id">) {
   return addDoc(collection(db, "reviews"), review);
 }
@@ -162,6 +169,10 @@ export async function addPromoCode(promo: Omit<PromoCode, "id">) {
 
 export async function updatePromoCode(id: string, data: Partial<PromoCode>) {
   return updateDoc(doc(db, "promoCodes", id), data);
+}
+
+export async function incrementPromoUsage(id: string) {
+  return updateDoc(doc(db, "promoCodes", id), { usageCount: increment(1) });
 }
 
 export async function deletePromoCode(id: string) {
