@@ -150,7 +150,7 @@ export default function BookingPage() {
         clientId: user.uid,
         clientName: profile.displayName,
         clientEmail: profile.email,
-        clientPhone: profile.phone,
+        clientPhone: profile.phone || "",
         serviceId: selectedService.id!,
         serviceName: selectedService.name,
         date: selectedDate,
