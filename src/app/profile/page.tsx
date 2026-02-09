@@ -17,7 +17,7 @@ import { db } from "@/lib/firebase";
 import { HiStar } from "react-icons/hi";
 
 export default function ProfilePage() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, updateProfile } = useAuth();
   const router = useRouter();
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -82,6 +82,7 @@ export default function ProfilePage() {
     if (!user) return;
     try {
       await updateDoc(doc(db, "users", user.uid), { phone });
+      updateProfile({ phone });
       setEditingPhone(false);
     } catch (error) {
       console.error("Error saving phone:", error);
