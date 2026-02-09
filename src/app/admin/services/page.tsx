@@ -138,7 +138,7 @@ export default function ServicesPage() {
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">
                 Nombre
               </label>
               <input
@@ -150,7 +150,7 @@ export default function ServicesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">
                 Descripción
               </label>
               <input
@@ -162,7 +162,7 @@ export default function ServicesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">
                 Duración (minutos)
               </label>
               <input
@@ -177,7 +177,7 @@ export default function ServicesPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">
                 Precio ($)
               </label>
               <input
