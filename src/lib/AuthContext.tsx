@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const adminUid = process.env.NEXT_PUBLIC_ADMIN_UID;
+  const adminUids = (process.env.NEXT_PUBLIC_ADMIN_UIDS || "").split(",").map((uid) => uid.trim()).filter(Boolean);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: user.email || "",
             displayName: user.displayName || "",
             photoURL: user.photoURL || undefined,
-            role: user.uid === adminUid ? "admin" : "client",
+            role: adminUids.includes(user.uid) ? "admin" : "client",
             createdAt: new Date().toISOString(),
           };
           await setDoc(profileRef, newProfile);
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [adminUid]);
+  }, [adminUids.join()]);
 
   const signInWithGoogle = async () => {
     await signInWithPopup(auth, googleProvider);
