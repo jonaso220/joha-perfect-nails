@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { User, onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, googleProvider, db } from "./firebase";
@@ -13,6 +13,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
+  updateProfile: (data: Partial<UserProfile>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   signInWithGoogle: async () => {},
   logout: async () => {},
   isAdmin: false,
+  updateProfile: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -35,27 +37,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
       if (user) {
-        const profileRef = doc(db, "users", user.uid);
-        const profileSnap = await getDoc(profileRef);
-        if (profileSnap.exists()) {
-          const existingProfile = profileSnap.data() as UserProfile;
-          const expectedRole = adminUids.includes(user.uid) ? "admin" : "client";
-          if (existingProfile.role !== expectedRole) {
-            existingProfile.role = expectedRole;
-            await setDoc(profileRef, existingProfile);
+        try {
+          const profileRef = doc(db, "users", user.uid);
+          const profileSnap = await getDoc(profileRef);
+          if (profileSnap.exists()) {
+            const existingProfile = profileSnap.data() as UserProfile;
+            const expectedRole = adminUids.includes(user.uid) ? "admin" : "client";
+            if (existingProfile.role !== expectedRole) {
+              existingProfile.role = expectedRole;
+              await setDoc(profileRef, existingProfile);
+            }
+            setProfile(existingProfile);
+          } else {
+            const newProfile: UserProfile = {
+              uid: user.uid,
+              email: user.email || "",
+              displayName: user.displayName || "",
+              ...(user.photoURL ? { photoURL: user.photoURL } : {}),
+              role: adminUids.includes(user.uid) ? "admin" : "client",
+              createdAt: new Date().toISOString(),
+            };
+            await setDoc(profileRef, newProfile);
+            setProfile(newProfile);
           }
-          setProfile(existingProfile);
-        } else {
-          const newProfile: UserProfile = {
-            uid: user.uid,
-            email: user.email || "",
-            displayName: user.displayName || "",
-            ...(user.photoURL ? { photoURL: user.photoURL } : {}),
-            role: adminUids.includes(user.uid) ? "admin" : "client",
-            createdAt: new Date().toISOString(),
-          };
-          await setDoc(profileRef, newProfile);
-          setProfile(newProfile);
+        } catch (error) {
+          console.error("Error loading user profile:", error);
         }
       } else {
         setProfile(null);
@@ -75,10 +81,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
+  const updateProfile = useCallback((data: Partial<UserProfile>) => {
+    setProfile((prev) => prev ? { ...prev, ...data } : prev);
+  }, []);
+
   const isAdmin = profile?.role === "admin";
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, profile, loading, signInWithGoogle, logout, isAdmin, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

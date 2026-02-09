@@ -161,7 +161,7 @@ export default function SchedulePage() {
 
         <div className="space-y-4">
           {DAY_NAMES.map((day) => (
-            <div key={day} className="border rounded-xl p-4">
+            <div key={day} className="border border-gray-700 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <label className="flex items-center gap-3">
                   <input
@@ -190,14 +190,14 @@ export default function SchedulePage() {
                         type="time"
                         value={slot.start}
                         onChange={(e) => updateSlot(day, i, "start", e.target.value)}
-                        className="border rounded-lg px-3 py-2 text-sm"
+                        className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 text-sm text-white"
                       />
                       <span className="text-gray-500">a</span>
                       <input
                         type="time"
                         value={slot.end}
                         onChange={(e) => updateSlot(day, i, "end", e.target.value)}
-                        className="border rounded-lg px-3 py-2 text-sm"
+                        className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 text-sm text-white"
                       />
                       {schedule[day].slots.length > 1 && (
                         <button
@@ -248,14 +248,14 @@ export default function SchedulePage() {
             type="date"
             value={newBlockedDate}
             onChange={(e) => setNewBlockedDate(e.target.value)}
-            className="border rounded-lg px-3 py-2 text-sm"
+            className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 text-sm text-white"
           />
           <input
             type="text"
             placeholder="Motivo (opcional)"
             value={newBlockedReason}
             onChange={(e) => setNewBlockedReason(e.target.value)}
-            className="border rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px]"
+            className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px] text-white placeholder-gray-600"
           />
           <button
             onClick={handleAddBlockedDate}
@@ -272,7 +272,7 @@ export default function SchedulePage() {
               .map((bd) => (
                 <div
                   key={bd.id}
-                  className="flex items-center justify-between border rounded-lg px-4 py-2"
+                  className="flex items-center justify-between border border-gray-700 rounded-lg px-4 py-2"
                 >
                   <div>
                     <span className="font-medium">{bd.date}</span>

@@ -146,7 +146,7 @@ export default function ServicesPage() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Ej: Uñas esculpidas"
-                className="border rounded-lg px-3 py-2 w-full"
+                className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 w-full text-white placeholder-gray-600"
               />
             </div>
             <div>
@@ -158,7 +158,7 @@ export default function ServicesPage() {
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Breve descripción"
-                className="border rounded-lg px-3 py-2 w-full"
+                className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 w-full text-white placeholder-gray-600"
               />
             </div>
             <div>
@@ -173,7 +173,7 @@ export default function ServicesPage() {
                   setForm({ ...form, durationMinutes: e.target.value.replace(/[^0-9]/g, "") })
                 }
                 placeholder="60"
-                className="border rounded-lg px-3 py-2 w-full"
+                className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 w-full text-white placeholder-gray-600"
               />
             </div>
             <div>
@@ -188,7 +188,7 @@ export default function ServicesPage() {
                   setForm({ ...form, price: e.target.value.replace(/[^0-9.]/g, "") })
                 }
                 placeholder="0"
-                className="border rounded-lg px-3 py-2 w-full"
+                className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 w-full text-white placeholder-gray-600"
               />
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function ServicesPage() {
             </button>
             <button
               onClick={resetForm}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-xl flex items-center gap-2 transition"
+              className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded-xl flex items-center gap-2 transition"
             >
               <HiX /> Cancelar
             </button>
@@ -223,7 +223,7 @@ export default function ServicesPage() {
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-lg">{service.name}</h3>
                   {!service.active && (
-                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                    <span className="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">
                       Inactivo
                     </span>
                   )}
@@ -239,8 +239,8 @@ export default function ServicesPage() {
                   onClick={() => toggleActive(service)}
                   className={`px-3 py-1 rounded-lg text-sm transition ${
                     service.active
-                      ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                      : "bg-green-100 hover:bg-green-200 text-green-700"
+                      ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                      : "bg-green-900/40 hover:bg-green-900/60 text-green-400"
                   }`}
                 >
                   {service.active ? "Desactivar" : "Activar"}
