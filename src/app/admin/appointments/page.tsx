@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { getAllAppointments, updateAppointment } from "@/lib/firestore";
 import { Appointment } from "@/lib/types";
+import { FaWhatsapp } from "react-icons/fa";
 
 export default function AdminAppointmentsPage() {
   const { isAdmin, loading: authLoading } = useAuth();
@@ -105,7 +106,20 @@ export default function AdminAppointmentsPage() {
                       {statusLabels[apt.status]}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-400">{apt.clientEmail}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-400">{apt.clientEmail}</p>
+                    {apt.clientPhone && (
+                      <a
+                        href={`https://wa.me/${apt.clientPhone.replace(/[^0-9]/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-500 hover:text-green-400 transition"
+                        title="Contactar por WhatsApp"
+                      >
+                        <FaWhatsapp size={16} />
+                      </a>
+                    )}
+                  </div>
                   <p className="text-sm text-gray-300 mt-1">
                     <strong>{apt.serviceName}</strong> - {apt.date} de{" "}
                     {apt.startTime} a {apt.endTime}

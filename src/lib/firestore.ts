@@ -16,6 +16,7 @@ import {
   BlockedDate,
   NailService,
   Appointment,
+  GalleryItem,
 } from "./types";
 
 // --- Schedule ---
@@ -111,4 +112,32 @@ export async function createAppointment(appointment: Omit<Appointment, "id">) {
 
 export async function updateAppointment(id: string, data: Partial<Appointment>) {
   return updateDoc(doc(db, "appointments", id), data);
+}
+
+// --- Gallery ---
+export async function getGalleryItems(): Promise<GalleryItem[]> {
+  const snap = await getDocs(collection(db, "gallery"));
+  const items = snap.docs.map((d) => ({ id: d.id, ...d.data() } as GalleryItem));
+  return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function addGalleryItem(item: Omit<GalleryItem, "id">) {
+  return addDoc(collection(db, "gallery"), item);
+}
+
+export async function deleteGalleryItem(id: string) {
+  return deleteDoc(doc(db, "gallery", id));
+}
+
+// --- Settings ---
+export async function getAdminWhatsApp(): Promise<string> {
+  const docRef = doc(db, "settings", "contact");
+  const snap = await getDoc(docRef);
+  if (snap.exists()) return (snap.data() as { whatsapp: string }).whatsapp || "";
+  return "";
+}
+
+export async function saveAdminWhatsApp(whatsapp: string) {
+  const docRef = doc(db, "settings", "contact");
+  await setDoc(docRef, { whatsapp });
 }

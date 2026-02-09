@@ -28,6 +28,9 @@ export default function Navbar() {
                     <Link href="/booking" className="text-gray-300 hover:text-gold transition">
                       Reservar turno
                     </Link>
+                    <Link href="/gallery" className="text-gray-300 hover:text-gold transition">
+                      Galería
+                    </Link>
                     <Link href="/profile" className="text-gray-300 hover:text-gold transition">
                       Mis turnos
                     </Link>
@@ -83,6 +86,9 @@ export default function Navbar() {
                   <>
                     <Link href="/booking" className="block py-2 text-gray-300 hover:text-gold" onClick={() => setMenuOpen(false)}>
                       Reservar turno
+                    </Link>
+                    <Link href="/gallery" className="block py-2 text-gray-300 hover:text-gold" onClick={() => setMenuOpen(false)}>
+                      Galería
                     </Link>
                     <Link href="/profile" className="block py-2 text-gray-300 hover:text-gold" onClick={() => setMenuOpen(false)}>
                       Mis turnos

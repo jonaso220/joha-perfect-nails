@@ -10,11 +10,13 @@ import {
   getBlockedDates,
   getAppointmentsByDate,
   createAppointment,
+  getAdminWhatsApp,
 } from "@/lib/firestore";
 import { NailService, WeeklySchedule, BlockedDate, Appointment, TimeSlot } from "@/lib/types";
 import { format, addDays, parse, addMinutes, isBefore } from "date-fns";
 import { es } from "date-fns/locale";
-import { HiCheck, HiArrowLeft, HiArrowRight } from "react-icons/hi";
+import { HiCheck, HiArrowLeft } from "react-icons/hi";
+import { FaWhatsapp } from "react-icons/fa";
 
 const DAY_NAMES = [
   "domingo",
@@ -38,6 +40,7 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [booked, setBooked] = useState(false);
+  const [adminWhatsApp, setAdminWhatsApp] = useState("");
 
   const [selectedService, setSelectedService] = useState<NailService | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -49,14 +52,16 @@ export default function BookingPage() {
 
   async function loadData() {
     try {
-      const [svc, sched, blocked] = await Promise.all([
+      const [svc, sched, blocked, whatsapp] = await Promise.all([
         getServices(),
         getWeeklySchedule(),
         getBlockedDates(),
+        getAdminWhatsApp(),
       ]);
       setServices(svc.filter((s) => s.active));
       setSchedule(sched);
       setBlockedDates(blocked);
+      setAdminWhatsApp(whatsapp);
     } catch (error) {
       console.error("Error loading booking data:", error);
     } finally {
@@ -189,6 +194,14 @@ export default function BookingPage() {
   }
 
   if (booked) {
+    const dateFormatted = selectedDate
+      ? format(new Date(selectedDate + "T12:00:00"), "EEEE d 'de' MMMM", { locale: es })
+      : selectedDate;
+    const whatsappMessage = `Hola! Reservé un turno para *${selectedService?.name}* el ${dateFormatted} a las ${selectedTime}hs. Mi nombre es ${profile?.displayName}. Gracias!`;
+    const whatsappUrl = adminWhatsApp
+      ? `https://wa.me/${adminWhatsApp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(whatsappMessage)}`
+      : "";
+
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
         <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
@@ -201,9 +214,22 @@ export default function BookingPage() {
           <strong>{selectedService?.name}</strong>
         </p>
         <p className="text-gray-400 mb-6">
-          {selectedDate} a las {selectedTime}hs
+          {dateFormatted} a las {selectedTime}hs
         </p>
-        <div className="flex gap-3 justify-center">
+
+        {whatsappUrl && (
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition mb-4"
+          >
+            <FaWhatsapp size={20} />
+            Confirmar por WhatsApp
+          </a>
+        )}
+
+        <div className="flex gap-3 justify-center mt-2">
           <button
             onClick={() => {
               setBooked(false);
@@ -218,7 +244,7 @@ export default function BookingPage() {
           </button>
           <button
             onClick={() => router.push("/profile")}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-xl transition"
+            className="bg-gray-700 hover:bg-gray-600 text-gray-200 px-6 py-2 rounded-xl transition"
           >
             Ver mis turnos
           </button>
