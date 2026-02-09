@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 import Navbar from "@/components/Navbar";
+import InstallPrompt from "@/components/InstallPrompt";
 
 export const metadata: Metadata = {
   title: "Joha Perfect Nails - Reserva tu turno",
@@ -29,6 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <Navbar />
           <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+          <InstallPrompt />
         </AuthProvider>
       </body>
     </html>
