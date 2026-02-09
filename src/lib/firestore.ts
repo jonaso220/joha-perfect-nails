@@ -9,7 +9,6 @@ import {
   deleteDoc,
   query,
   where,
-  orderBy,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import {
@@ -82,27 +81,28 @@ export async function deleteService(id: string) {
 export async function getAppointmentsByDate(date: string): Promise<Appointment[]> {
   const q = query(
     collection(db, "appointments"),
-    where("date", "==", date),
-    where("status", "!=", "cancelled")
+    where("date", "==", date)
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Appointment));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() } as Appointment))
+    .filter((a) => a.status !== "cancelled");
 }
 
 export async function getAppointmentsByClient(clientId: string): Promise<Appointment[]> {
   const q = query(
     collection(db, "appointments"),
-    where("clientId", "==", clientId),
-    orderBy("date", "desc")
+    where("clientId", "==", clientId)
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Appointment));
+  const appointments = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Appointment));
+  return appointments.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export async function getAllAppointments(): Promise<Appointment[]> {
-  const q = query(collection(db, "appointments"), orderBy("date", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Appointment));
+  const snap = await getDocs(collection(db, "appointments"));
+  const appointments = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Appointment));
+  return appointments.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 export async function createAppointment(appointment: Omit<Appointment, "id">) {
