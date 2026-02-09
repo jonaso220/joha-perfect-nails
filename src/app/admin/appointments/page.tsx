@@ -124,6 +124,17 @@ export default function AdminAppointmentsPage() {
                     <strong>{apt.serviceName}</strong> - {apt.date} de{" "}
                     {apt.startTime} a {apt.endTime}
                   </p>
+                  {apt.notes && (
+                    <p className="text-xs text-gray-500 mt-1 italic">Nota: {apt.notes}</p>
+                  )}
+                  {apt.price !== undefined && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Precio: ${apt.price.toLocaleString()}
+                      {apt.discountCode && (
+                        <span className="text-green-400 ml-1">(código: {apt.discountCode}, -{apt.discountAmount}%)</span>
+                      )}
+                    </p>
+                  )}
                 </div>
 
                 {apt.status === "confirmed" && (

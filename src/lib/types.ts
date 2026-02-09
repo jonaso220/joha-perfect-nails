@@ -39,6 +39,10 @@ export interface Appointment {
   startTime: string;    // "HH:mm"
   endTime: string;      // "HH:mm"
   status: "confirmed" | "cancelled" | "completed";
+  notes?: string;
+  price?: number;
+  discountCode?: string;
+  discountAmount?: number;
   createdAt: string;
 }
 
@@ -57,4 +61,37 @@ export interface GalleryItem {
   imageUrl: string;
   description: string;
   createdAt: string;
+}
+
+export interface Review {
+  id?: string;
+  appointmentId: string;
+  clientId: string;
+  clientName: string;
+  rating: number;       // 1-5
+  comment: string;
+  createdAt: string;
+}
+
+export interface PromoCode {
+  id?: string;
+  code: string;
+  discountPercent: number;
+  active: boolean;
+  usageLimit: number;
+  usageCount: number;
+  createdAt: string;
+}
+
+export interface WaitlistEntry {
+  id?: string;
+  clientId: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  serviceId: string;
+  serviceName: string;
+  date: string;         // "YYYY-MM-DD"
+  createdAt: string;
+  notified: boolean;
 }
