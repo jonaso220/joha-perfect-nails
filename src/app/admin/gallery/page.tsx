@@ -6,8 +6,45 @@ import { useEffect, useState, useRef } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { getGalleryItems, addGalleryItem, deleteGalleryItem } from "@/lib/firestore";
 import { GalleryItem } from "@/lib/types";
-import { HiPlus, HiTrash, HiUpload } from "react-icons/hi";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { HiPlus, HiTrash, HiUpload, HiPhotograph } from "react-icons/hi";
+
+const MAX_IMAGE_SIZE = 1200;
+const JPEG_QUALITY = 0.8;
+
+function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+
+        if (width > MAX_IMAGE_SIZE || height > MAX_IMAGE_SIZE) {
+          if (width > height) {
+            height = Math.round((height * MAX_IMAGE_SIZE) / width);
+            width = MAX_IMAGE_SIZE;
+          } else {
+            width = Math.round((width * MAX_IMAGE_SIZE) / height);
+            height = MAX_IMAGE_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { reject(new Error("No canvas context")); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error("Error al cargar la imagen"));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error("Error al leer el archivo"));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function AdminGalleryPage() {
   const { isAdmin, loading: authLoading } = useAuth();
@@ -44,15 +81,11 @@ export default function AdminGalleryPage() {
   async function handleFileUpload(file: File) {
     setUploading(true);
     try {
-      const storage = getStorage();
-      const fileName = `gallery/${Date.now()}_${file.name}`;
-      const storageRef = ref(storage, fileName);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      setImageUrl(url);
+      const dataUrl = await compressImage(file);
+      setImageUrl(dataUrl);
     } catch (error) {
-      console.error("Error uploading file:", error);
-      alert("Error al subir la imagen. Probá con una URL en su lugar.");
+      console.error("Error processing image:", error);
+      alert("Error al procesar la imagen. Intentá con otra imagen o pegá una URL.");
     } finally {
       setUploading(false);
     }
@@ -111,20 +144,20 @@ export default function AdminGalleryPage() {
           {/* Toggle upload mode */}
           <div className="flex gap-2 mb-4">
             <button
-              onClick={() => setUploadMode("file")}
-              className={`px-3 py-1 rounded-lg text-sm transition ${
+              onClick={() => { setUploadMode("file"); setImageUrl(""); }}
+              className={`px-3 py-1 rounded-lg text-sm transition flex items-center gap-1.5 ${
                 uploadMode === "file" ? "bg-gold text-black" : "bg-gray-800 text-gray-400"
               }`}
             >
-              Subir archivo
+              <HiUpload size={14} /> Subir foto
             </button>
             <button
-              onClick={() => setUploadMode("url")}
-              className={`px-3 py-1 rounded-lg text-sm transition ${
+              onClick={() => { setUploadMode("url"); setImageUrl(""); }}
+              className={`px-3 py-1 rounded-lg text-sm transition flex items-center gap-1.5 ${
                 uploadMode === "url" ? "bg-gold text-black" : "bg-gray-800 text-gray-400"
               }`}
             >
-              Pegar URL
+              <HiPhotograph size={14} /> Pegar URL
             </button>
           </div>
 
@@ -140,18 +173,30 @@ export default function AdminGalleryPage() {
                 }}
                 className="hidden"
               />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="border-2 border-dashed border-gray-600 rounded-xl p-6 w-full text-center hover:border-gold transition flex flex-col items-center gap-2"
-              >
-                <HiUpload className="text-2xl text-gray-400" />
-                <span className="text-gray-400 text-sm">
-                  {uploading ? "Subiendo..." : "Hacé clic para seleccionar una imagen"}
-                </span>
-              </button>
-              {imageUrl && (
-                <img src={imageUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 mx-auto" />
+              {!imageUrl ? (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="border-2 border-dashed border-gray-600 rounded-xl p-8 w-full text-center hover:border-gold transition flex flex-col items-center gap-2"
+                >
+                  <HiUpload className="text-3xl text-gray-400" />
+                  <span className="text-gray-400 text-sm">
+                    {uploading ? "Comprimiendo imagen..." : "Tocá para elegir una foto"}
+                  </span>
+                  <span className="text-gray-600 text-xs">
+                    Se comprime automáticamente
+                  </span>
+                </button>
+              ) : (
+                <div className="relative">
+                  <img src={imageUrl} alt="Preview" className="rounded-lg max-h-60 mx-auto" />
+                  <button
+                    onClick={() => { setImageUrl(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                    className="absolute top-2 right-2 bg-black/70 text-white p-1.5 rounded-lg hover:bg-red-600 transition"
+                  >
+                    <HiTrash size={16} />
+                  </button>
+                </div>
               )}
             </div>
           ) : (
@@ -164,6 +209,9 @@ export default function AdminGalleryPage() {
                 placeholder="https://..."
                 className="border border-gray-700 bg-black/30 rounded-lg px-3 py-2 w-full text-white placeholder-gray-600"
               />
+              <p className="text-gray-600 text-xs mt-1">
+                Usá URLs directas de imágenes. Las URLs de Google Photos pueden dejar de funcionar.
+              </p>
               {imageUrl && (
                 <img src={imageUrl} alt="Preview" className="mt-3 rounded-lg max-h-48 mx-auto" />
               )}
