@@ -281,8 +281,9 @@ export default function BookingPage() {
       ? format(new Date(selectedDate + "T12:00:00"), "EEEE d 'de' MMMM", { locale: es })
       : selectedDate;
     const whatsappMessage = `Hola! Reservé un turno para *${selectedService?.name}* el ${dateFormatted} a las ${selectedTime}hs. Mi nombre es ${profile?.displayName}. Gracias!`;
-    const whatsappUrl = adminWhatsApp
-      ? `https://wa.me/${adminWhatsApp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(whatsappMessage)}`
+    const whatsappPhone = adminWhatsApp ? adminWhatsApp.replace(/[^0-9]/g, "").replace(/^0+/, "") : "";
+    const whatsappUrl = whatsappPhone
+      ? `https://api.whatsapp.com/send?phone=${whatsappPhone}&text=${encodeURIComponent(whatsappMessage)}`
       : "";
 
     return (
@@ -295,10 +296,11 @@ export default function BookingPage() {
         <p className="text-gray-400 mb-6">{dateFormatted} a las {selectedTime}hs</p>
 
         {whatsappUrl && (
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+          <button
+            onClick={() => window.open(whatsappUrl, "_blank", "noopener,noreferrer")}
             className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition mb-4">
             <FaWhatsapp size={20} /> Confirmar por WhatsApp
-          </a>
+          </button>
         )}
 
         <div className="flex gap-3 justify-center mt-2">
