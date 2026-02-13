@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 import Navbar from "@/components/Navbar";
 import InstallPrompt from "@/components/InstallPrompt";
+import UpdateNotification from "@/components/UpdateNotification";
 
 export const metadata: Metadata = {
   title: "Glow by Joha - Reserva tu turno",
@@ -31,6 +32,7 @@ export default function RootLayout({
           <Navbar />
           <main className="min-h-[calc(100vh-4rem)]">{children}</main>
           <InstallPrompt />
+          <UpdateNotification />
         </AuthProvider>
       </body>
     </html>
