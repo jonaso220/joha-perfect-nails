@@ -57,15 +57,15 @@ export default function Home() {
         <div className="mb-6">
           <Image
             src="/logo.png"
-            alt="Joha Perfect Nails"
-            width={180}
-            height={180}
-            className="mx-auto rounded-full shadow-lg shadow-gold/20"
+            alt="Glow by Joha"
+            width={220}
+            height={220}
+            className="mx-auto rounded-2xl shadow-lg shadow-gold/20"
             priority
           />
         </div>
         <h1 className="text-5xl font-bold text-gold mb-4">
-          Joha Perfect Nails
+          Glow by Joha
         </h1>
         <p className="text-xl text-gray-400 mb-8">
           Uñas esculpidas, capping y soft gel

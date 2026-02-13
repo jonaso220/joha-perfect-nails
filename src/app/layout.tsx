@@ -5,9 +5,9 @@ import Navbar from "@/components/Navbar";
 import InstallPrompt from "@/components/InstallPrompt";
 
 export const metadata: Metadata = {
-  title: "Joha Perfect Nails - Reserva tu turno",
+  title: "Glow by Joha - Reserva tu turno",
   description:
-    "Reserva tu turno para uñas esculpidas, capping y soft gel con Joha Perfect Nails",
+    "Reserva tu turno para uñas esculpidas, capping y soft gel con Glow by Joha",
   icons: {
     icon: [
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
