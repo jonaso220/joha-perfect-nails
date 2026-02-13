@@ -10,25 +10,30 @@ export default function UpdateNotification() {
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-    // Register service worker
+    // Register service worker - updateViaCache: "none" forces network check
     navigator.serviceWorker
-      .register("/sw.js")
+      .register("/sw.js", { updateViaCache: "none" })
       .then((reg) => {
         setRegistration(reg);
 
+        // If there's already a waiting worker (e.g. from a previous visit)
+        if (reg.waiting) {
+          setUpdateAvailable(true);
+        }
+
         // Check for updates every 60 seconds
         const interval = setInterval(() => {
-          reg.update();
+          reg.update().catch(() => {});
         }, 60 * 1000);
 
-        // Listen for new service worker waiting to activate
+        // Listen for new service worker found
         reg.addEventListener("updatefound", () => {
           const newWorker = reg.installing;
           if (!newWorker) return;
 
           newWorker.addEventListener("statechange", () => {
             if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-              // New version available
+              // New version is ready and waiting - show notification
               setUpdateAvailable(true);
             }
           });
