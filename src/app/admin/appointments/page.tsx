@@ -109,13 +109,13 @@ export default function AdminAppointmentsPage() {
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-gray-400">{apt.clientEmail}</p>
                     {apt.clientPhone && (
-                      <button
-                        onClick={() => window.open(`https://api.whatsapp.com/send?phone=${apt.clientPhone!.replace(/[^0-9]/g, "").replace(/^0+/, "")}`, "_blank", "noopener,noreferrer")}
+                      <a
+                        href={`https://api.whatsapp.com/send?phone=${apt.clientPhone.replace(/[^0-9]/g, "").replace(/^0+/, "")}`}
                         className="text-green-500 hover:text-green-400 transition"
                         title="Contactar por WhatsApp"
                       >
                         <FaWhatsapp size={16} />
-                      </button>
+                      </a>
                     )}
                   </div>
                   <p className="text-sm text-gray-300 mt-1">
