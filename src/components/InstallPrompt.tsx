@@ -70,7 +70,7 @@ export default function InstallPrompt() {
               <HiDownload className="text-gold text-xl" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white text-sm">Instalar Joha Perfect Nails</h3>
+              <h3 className="font-semibold text-white text-sm">Instalar Glow by Joha</h3>
               <p className="text-gray-400 text-xs mt-1">
                 Agregá la app a tu pantalla de inicio para acceder más rápido.
               </p>
@@ -108,7 +108,7 @@ export default function InstallPrompt() {
               <HiDownload className="text-gold text-xl" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white text-sm">Instalar Joha Perfect Nails</h3>
+              <h3 className="font-semibold text-white text-sm">Instalar Glow by Joha</h3>
               <p className="text-gray-400 text-xs mt-1">
                 Tocá el botón <span className="inline-block mx-0.5">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="inline text-gold">

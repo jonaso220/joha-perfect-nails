@@ -15,8 +15,8 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold tracking-wide text-gold">
-            <Image src="/logo.png" alt="Joha Perfect Nails" width={40} height={40} className="rounded-full" />
-            Joha Perfect Nails
+            <Image src="/logo.png" alt="Glow by Joha" width={40} height={40} className="rounded-full" />
+            Glow by Joha
           </Link>
 
           {/* Desktop menu */}
