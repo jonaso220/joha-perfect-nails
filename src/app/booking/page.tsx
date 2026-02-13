@@ -296,11 +296,11 @@ export default function BookingPage() {
         <p className="text-gray-400 mb-6">{dateFormatted} a las {selectedTime}hs</p>
 
         {whatsappUrl && (
-          <button
-            onClick={() => window.open(whatsappUrl, "_blank", "noopener,noreferrer")}
+          <a
+            href={whatsappUrl}
             className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition mb-4">
             <FaWhatsapp size={20} /> Confirmar por WhatsApp
-          </button>
+          </a>
         )}
 
         <div className="flex gap-3 justify-center mt-2">
