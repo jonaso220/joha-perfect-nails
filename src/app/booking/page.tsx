@@ -9,7 +9,6 @@ import {
   getWeeklySchedule,
   getBlockedDates,
   getAppointmentsByDate,
-  getAppointmentsByClient,
   createAppointment,
   getAdminWhatsApp,
   validatePromoCode,
@@ -45,7 +44,6 @@ export default function BookingPage() {
   const [booking, setBooking] = useState(false);
   const [booked, setBooked] = useState(false);
   const [adminWhatsApp, setAdminWhatsApp] = useState("");
-  const [hasActiveBooking, setHasActiveBooking] = useState(false);
 
   const [selectedService, setSelectedService] = useState<NailService | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -60,16 +58,6 @@ export default function BookingPage() {
   useEffect(() => {
     loadData();
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      const today = new Date().toISOString().split("T")[0];
-      getAppointmentsByClient(user.uid).then((apts) => {
-        const active = apts.some((a) => a.status === "confirmed" && a.date >= today);
-        setHasActiveBooking(active);
-      });
-    }
-  }, [user]);
 
   async function loadData() {
     try {
@@ -238,7 +226,6 @@ export default function BookingPage() {
       }
 
       setBooked(true);
-      setHasActiveBooking(true);
     } catch (error) {
       console.error("Error creating appointment:", error);
       alert("Error al crear el turno. Por favor intentá de nuevo.");
@@ -256,21 +243,6 @@ export default function BookingPage() {
         <p className="text-gray-500 mb-6">Necesitás iniciar sesión para poder reservar un turno.</p>
         <button onClick={signInWithGoogle} className="btn-gold font-semibold px-6 py-3 rounded-xl transition">
           Iniciar sesión con Google
-        </button>
-      </div>
-    );
-  }
-
-  if (hasActiveBooking && !booked) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <div className="bg-gold/10 border border-gold/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-          <HiCheck className="text-gold text-3xl" />
-        </div>
-        <h2 className="text-2xl font-bold text-gold mb-2">Ya tenés un turno activo</h2>
-        <p className="text-gray-400 mb-6">Podés cancelarlo desde tu perfil antes de reservar uno nuevo.</p>
-        <button onClick={() => router.push("/profile")} className="btn-gold px-6 py-2 rounded-xl transition">
-          Ver mis turnos
         </button>
       </div>
     );
